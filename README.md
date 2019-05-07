@@ -1,3 +1,3 @@
-######mstr###### 
-home page: https://36kr.com/
+######master###### 
+home page: https://36kr.com
 detail page: https://36kr.com/p/id.html
