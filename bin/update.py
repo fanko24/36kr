@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# update the 36kr articles with incremental article id
 
 # standard libraries
 import sys
@@ -14,10 +15,41 @@ from collections import deque
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-# my own libraries
+# my libraries
 import article
 from myLog import log
 from myConf import conf
+
+# get the max id that have been spidered already
+def get_max_id(id_file):
+    fin = open(id_file, "r", encoding="utf-8")
+    current_id = int(fin.read())    
+    fin.close()
+    return current_id
+
+# update the max_id to the file
+def update_max_id(id_file, max_id):
+    fout = open(id_file, "w", encoding="utf-8")
+    fout.write(str(max_id)+"\n")
+    fout.close()
+    return None
+
+# spider a page id
+def spider(article_id):
+    # download the page and analyze the feature
+    dic = get_page(article_id)
+    # if get page success, update the page
+    if dic:
+        log.info("get page success: " + str(article_id))
+        ret = update_mysql(dic) # update the dic
+        if ret:
+            log.info("update page success: " + str(article_id))
+        else:
+             log.warning("update page fail: " + str(article_id))
+        return True
+    else:
+        log.warning("get page fail: " + str(article_id))
+        return False
 
 # download the page and analyze features to dic
 def get_page(id):
@@ -33,20 +65,46 @@ def get_page(id):
         match = pattern.search(html)
         if match:
             column_key = conf.get("column", "spider")
-            column_list = [key.strip() for key in column_key.split(",")]
-            for i, column in enumerate(column_list):
-                dic[column] = match.group(i + 1)
+            column_type = conf.get("column", "type")
+            key_list = [key.strip() for key in column_key.split(",")]
+            type_list = [typ.strip() for typ in column_type.split(",")]
+            for i, column in enumerate(key_list):
+                if type_list[i] == "int":
+                    dic[column] = int(match.group(i + 1))
+                else:
+                    dic[column] = match.group(i + 1)
     except:
         pass
     
     return dic
 
+# connect the mysql database
+def connect_mysql():
+    host = conf.get("mysql", "host") 
+    user = conf.get("mysql", "user") 
+    password = conf.get("mysql", "password") 
+    database = conf.get("mysql", "database")
+    db = pymysql.connect(host, user, password, database)
+    if db:
+        log.info("connect db success")
+    else:
+        log.warning("connect db fail")
+    return db
+     
 # build the insert sql
 def build_insert_sql(dic):
     column_key = conf.get("column", "spider")
-    column_list = [key.strip() for key in column_key.split(",")]
-    value_str = ", ".join([dic[key] for key in column_list])
-    insert_sql = "replace into table (" + column_key + ") value (" + value_str + ")"
+    column_type = conf.get("column", "type")
+    key_list = [key.strip() for key in column_key.split(",")]
+    type_list = [typ.strip() for typ in column_type.split(",")]
+    str_list = []
+    for i, column in enumerate(key_list):
+        if type_list[i] == "int":
+            str_list.append(str(dic[column]))
+        else:
+            str_list.append("'"+str(dic[column])+"'")
+    
+    insert_sql = "insert into article values("+",".join(str_list)+")"
     return insert_sql
 
 # update the result file
@@ -59,56 +117,35 @@ def update_mysql(dic):
 
     # build the sql insert text
     insert_sql = build_insert_sql(dic)
-    
     # excute the insert sql 
     try:
-        cursor.excute(insert_sql)
+        cursor.execute(insert_sql)
         db.commit()
         log.info("excute sql success: " + insert_sql)
     except:  # if fail, rollback
         db.rollback()
-        log.info("excute sql fail: " + insert_sql)
-
+        log.warning("excute sql fail: " + insert_sql)
+    
     db.close()
     return None
 
-# spider a page id
-def spider(article_id):
-    # download the page and analyze the feature
-    dic = get_page(article_id)
-    
-    # if get page success, update the page
-    if dic:
-        log.info("get page success: " + str(article_id))
-        ret = update_mysql(dic) # update the dic
-        if ret:
-            log.info("update page success: " + str(article_id))
-        else:
-            log.warning("update page fail: " + str(article_id))
-        return True
-    else:
-        log.warning("get page fail: " + str(article_id))
-        return False
-
-# get the max id that have been spidered already
-def get_current_id(file):
-    fin = open(file, "r", encoding="utf-8")
-    current_id = int(fin.read())    
-    fin.close()
-    return current_id
-
 if __name__ == "__main__":
-    id_file = "../data/current_id"
+    # read the max id file
+    id_file = conf.get("file", "max_id")
     
-    # get the begin_id
-    begin_id = get_current_id(id_file) + 1
+    # get the max id that have been spidered
+    max_id = get_max_id(id_file)
     fail = 0
     
-    # if fail >= threshold, quit; else, random sleep and spider the next id
+    # if fail >= threshold, quit; else, random sleep and spider the incremental id
+    article_id = max_id + 1
     while fail < 100:
-        ret = spider(begin_id)
+        ret = spider(article_id)
+        # if spider success, update fail times and max id
         if ret:
-            fails = 0
+            fail = 0
+            max_id = article_id
+            update_max_id(id_file, max_id)
         time.sleep(random.randint(1, 3))
-        begin_id += 1
+        article_id += 1
         fail += 1

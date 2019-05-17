@@ -20,12 +20,12 @@ class Article:
     # get the article id
     def __get_id(self, text_dict):
         if "id" in text_dict:
-            return int(text_dict["id"])
+            return text_dict["id"]
 
     # get the category id
     def __get_category_id(self, text_dict):
         if "category_id" in text_dict:
-            return int(text_dict["category_id"])
+            return text_dict["category_id"]
 
     # get the title
     def __get_title(self, text_dict):
@@ -53,7 +53,7 @@ class Article:
     # get the author id
     def __get_author_id(self, text_dict):
         if "author_id" in text_dict:
-            return int(text_dict["author_id"])
+            return text_dict["author_id"]
 
     def __format(self, content):
         del_list = [
