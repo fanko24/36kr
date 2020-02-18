@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     current_id = min_id - 1
     cnt = 0
-    while current_id > 5292000:
+    while current_id > 5290000:
         ret = spider.spider(current_id)
 
         # if spider success, update the article to mysql; or update the fail message
