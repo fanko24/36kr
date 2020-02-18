@@ -24,6 +24,7 @@ if __name__ == "__main__":
     log.info("The min id is " + str(min_id))
 
     current_id = min_id - 1
+    cnt = 0
     while current_id > 5292000:
         ret = spider.spider(current_id)
 
@@ -31,8 +32,12 @@ if __name__ == "__main__":
         if not ret:
             update_success(current_id)
             log.info("Update success: " + str(current_id))
+            cnt = 0
         else:
             update_fail(current_id)
-            log.info("Update fail: " + str(current_id))
+            log.warning("Update fail: " + str(current_id))
+            cnt += 1
+            if cnt > 100:
+                break
 
         current_id -= 1

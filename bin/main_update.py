@@ -8,7 +8,7 @@ from myLog import log
 
 # get the max id of articles that have spidered
 def get_max_id():
-    return 5293000
+    return 5292000
 
 # update the success content of the article
 def update_success(cid):
@@ -36,6 +36,6 @@ if __name__ == "__main__":
         else:
             update_fail(current_id)
             cnt += 1
-            log.info("Update fail: " + str(current_id))
+            log.warning("Update fail: " + str(current_id))
 
         current_id += 1
