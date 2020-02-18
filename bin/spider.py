@@ -20,21 +20,21 @@ def spider(article_id):
     # download the article
     html, ret = download(article_id)
     if ret:
-        log.info("Download fail: " + str(article_id))
+        log.warning("Download fail: " + str(article_id))
         return ret
     log.info("Download success: " + str(article_id))
     
     # analyze the article
     dic = analyze(html)
     if not dic:
-        log.info("Analyze fail: " + str(article_id))
+        log.warning("Analyze fail: " + str(article_id))
         return -3
     log.info("Analyze success: " + str(article_id))
     
     # store the article
     ret = store(dic)
     if not ret:
-        log.info("Store fail: " + str(article_id))
+        log.warning("Store fail: " + str(article_id))
         return -4
     log.info("Store success: " + str(article_id))
      
@@ -42,7 +42,7 @@ def spider(article_id):
 
 # download a page
 def download(article_id):
-    time.sleep(random.randint(1000,3000)/1000.0) 
+    time.sleep(random.randint(1000,2000)/1000.0) 
     html = None
     # download the page
     url = "https://36kr.com/p/"+str(article_id)
@@ -109,4 +109,4 @@ if __name__ == "__main__":
     if not ret:
         log.info("Spider success: " + str(article_id))
     else:
-        log.info("Spider fail: " + str(article_id))
+        log.warning("Spider fail: " + str(article_id))
