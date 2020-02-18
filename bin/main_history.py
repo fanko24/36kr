@@ -8,7 +8,7 @@ from myLog import log
 
 # get the min id of articles that have spidered
 def get_min_id():
-    return 5292438
+    return 5292738
 
 # update the success content of the article
 def update_success(cid):
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     log.info("The min id is " + str(min_id))
 
     current_id = min_id - 1
-    while current_id > 5292600:
+    while current_id > 5292000:
         ret = spider.spider(current_id)
 
         # if spider success, update the article to mysql; or update the fail message
