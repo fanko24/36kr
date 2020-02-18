@@ -7,6 +7,9 @@ import re
 import time
 import random
 
+# standard libraries
+import sys
+
 # third party libraries
 from urllib import request
 
@@ -81,20 +84,26 @@ def download(article_id):
 # analyze a html
 def analyze(html):
     dic = {}
-    pattern = re.compile(r'{"id":(\d+),"project_id":.*?,"goods_id":.*?,"domain_id":.*?,"column_id":(\d+),"monographic_id":.*?,"related_company_id":.*?,"related_company_type":.*?,"related_company_name":.*?,"close_comment":.*?,"state":.*?,"title":"(.*?)","catch_title":.*?,"summary":"(.*?)","content":"(.*?)","cover":.*?,"source_type":.*?,"source_urls":.*?,"related_post_ids":"(.*?)","extraction_tags":"(.*?)","extra":.*?,"published_at":"(.*?)","created_at":"(.*?)","updated_at":"(.*?)","counters":{"view_count":(\d+),"pv":(\d+),"pv_mobile":(\d+),"pv_app":(\d+),"favorite":(\d+),"comment":(\d+),"like":(\d+)}.*?}],"user":{"id":(\d+),"name":"(.*?)","avatar_url":".*?","tovc_avatar_url"')
+    pattern = re.compile(r'{"id":(.*?),"project_id":(.*?),"goods_id":(.*?),"domain_id":(.*?),"column_id":(.*?),"monographic_id":(.*?),"related_company_id":(.*?),"related_company_type":"(.*?)","related_company_name":"(.*?)","close_comment":(.*?),"state":"(.*?)","title":"(.*?)","catch_title":"(.*?)","summary":"(.*?)","content":"(.*?)","cover":"(.*?)","source_type":"(.*?)","source_urls":"(.*?)","related_post_ids":"(.*?)","extraction_tags":"(.*?)","extra":(.*?),"user_id":(.*?),"published_at":"(.*?)","created_at":"(.*?)","updated_at":"(.*?)","counters":(.*?),"related_company_counters":(.*?),"related_posts":(.*?),"is_free":(.*?),"has_rights_goods":(.*?),"is_tovc":(.*?),"image_source":(.*?),"company_info":(.*?),"company_contact_info":(.*?),"company_fund_info":(.*?),"share_data":(.*?),"title_mobile":(.*?),"cover_mobile":(.*?),"ban_eclub":(.*?),"audios":(.*?),"column":(.*?),"db_counters":(.*?),"user":(.*?)')
         
     # match the regex pattern and analyze features
     match = pattern.search(html)
     if match:
-        column_key = conf.get("column", "spider")
-        column_type = conf.get("column", "type")
+        column_key = conf.get("column", "keys")
+        column_type = conf.get("column", "types")
         key_list = [key.strip() for key in column_key.split(",")]
         type_list = [typ.strip() for typ in column_type.split(",")]
         for i, column in enumerate(key_list):
             if type_list[i] == "int":
-                dic[column] = int(match.group(i + 1))
+                if match.group(i + 1).isdigit():
+                    dic[column] = int(match.group(i + 1))
+                else:
+                    dic[column] = None
             else:
-                dic[column] = match.group(i + 1)
+                if match.group(i + 1) != "null":
+                    dic[column] = match.group(i + 1)
+                else:
+                    dic[column] = None
     return dic
 
 # store the article
@@ -104,7 +113,7 @@ def store(dic):
 
 
 if __name__ == "__main__":
-    article_id = 7
+    article_id = sys.argv[1]
     ret = spider(article_id)
     if not ret:
         log.info("Spider success: " + str(article_id))
