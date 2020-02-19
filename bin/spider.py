@@ -69,13 +69,13 @@ def download(article_id):
         req = request.Request(url, headers=headers)
         response = request.urlopen(req)
     except:
-        log.warning("urlopen fail: " + str(article_id))
+        log.warning("Urlopen fail: " + str(article_id))
         return html, -1
 
     try:
         html = response.read().decode("utf-8")
     except:
-        log.warning("decode fail: " + str(article_id))
+        log.warning("Decode fail: " + str(article_id))
         return html, -2
         
     return html, 0
