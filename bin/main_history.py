@@ -8,7 +8,7 @@ from myLog import log
 
 # get the min id of articles that have spidered
 def get_min_id():
-    return 5292738
+    return 5293001
 
 # update the success content of the article
 def update_success(cid):

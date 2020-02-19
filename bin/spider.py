@@ -6,8 +6,7 @@
 import re
 import time
 import random
-
-# standard libraries
+import json
 import sys
 
 # third party libraries
@@ -108,7 +107,7 @@ def analyze(html):
 
 # store the article
 def store(dic):
-    print(dic)
+    print(json.dumps(dic))
     return True
 
 
