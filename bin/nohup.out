@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "main_update.py", line 29, in <module>
+    ret = spider.spider(current_id)
+  File "/Users/fanko/work/36kr/bin/spider.py", line 27, in spider
+    update_error(ret)
+  File "/Users/fanko/work/36kr/bin/spider.py", line 53, in update_error
+    sql = "insert into article_fail (id, type) values (" + str(article_id) + "," + str(ret) + ") on duplicate key update type =" + str(ret) 
+NameError: name 'article_id' is not defined

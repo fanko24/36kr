@@ -24,6 +24,7 @@ def spider(article_id):
     html, ret = download(article_id)
     if ret:
         log.warning("Download fail: " + str(article_id))
+        update_error(ret, article_id)
         return ret
     log.info("Download success: " + str(article_id))
     
@@ -31,16 +32,33 @@ def spider(article_id):
     dic = analyze(html)
     if not dic:
         log.warning("Analyze fail: " + str(article_id))
-        return -3
+        ret = -3
+        update_error(ret)
+        return ret
     log.info("Analyze success: " + str(article_id))
     
     # store the article
     ret = store(dic, article_id)
     if ret:
         log.warning("Store fail: " + str(article_id))
+        update_error(ret)
         return ret
     log.info("Store success: " + str(article_id))
-     
+
+    return 0
+
+def update_error(ret, article_id):
+    db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
+    cursor = db.cursor()
+    sql = "insert into article_fail (id, type) values (" + str(article_id) + "," + str(ret) + ") on duplicate key update type =" + str(ret) 
+    try:
+        cursor.execute(sql)
+        db.commit()
+    except:
+        db.rollback()
+ 
+    db.close()
+
     return 0
 
 # download a page
@@ -146,8 +164,6 @@ def store(dic, article_id):
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
     cursor = db.cursor()
     sql = "insert into article (" + column_key + ") values (" + value_str + ") on duplicate key update " + update_str
-    print (sql)
-    #sql = "insert into article_fail (aid, type) values (1, 0) on duplicate key update type = 1"
     try:
         cursor.execute(sql)
         db.commit()
