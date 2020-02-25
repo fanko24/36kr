@@ -11,6 +11,7 @@ import sys
 
 # third party libraries
 from urllib import request
+import pymysql
 
 # my libraries
 import article
@@ -34,10 +35,10 @@ def spider(article_id):
     log.info("Analyze success: " + str(article_id))
     
     # store the article
-    ret = store(dic)
-    if not ret:
+    ret = store(dic, article_id)
+    if ret:
         log.warning("Store fail: " + str(article_id))
-        return -4
+        return ret
     log.info("Store success: " + str(article_id))
      
     return 0
@@ -64,7 +65,6 @@ def download(article_id):
         ]
     ua = random.choice(ua_list)
     headers = {"user-agent": ua}
-    #headers = {"user-agent": ua, "cookie": "acw_tc=2760827c15819210341097078ed3e82132c1f91b59f1cc36f0ff20d1366570; Hm_lvt_1684191ccae0314c6254306a8333d090=1581921035; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%2216f68f38b17823-03884ccb04109b-1d376b5b-1296000-16f68f38b18235%22%2C%22%24device_id%22%3A%2216f68f38b17823-03884ccb04109b-1d376b5b-1296000-16f68f38b18235%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC_%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80%22%7D%7D; Hm_lvt_713123c60a0e86982326bae1a51083e1=1581921035; krnewsfrontss=4e190253810f3323b0c2596a59156c61; M-XSRF-TOKEN=147fb35e9519f3e6c86ec126fbf2a22f5009c49855a16596f02c1ca5325e8a88; acw_sc__v2=5e4b633553604e82f627aee9d03ccca1cca23700; Hm_lpvt_1684191ccae0314c6254306a8333d090=1581999238; SERVERID=6754aaff36cb16c614a357bbc08228ea|1581999238|1581988240; Hm_lpvt_713123c60a0e86982326bae1a51083e1=1581999238"}
     try:
         req = request.Request(url, headers=headers)
         response = request.urlopen(req)
@@ -105,10 +105,58 @@ def analyze(html):
                     dic[column] = None
     return dic
 
+def get_value(dic):
+    str_list = []
+    column_key = conf.get("column", "keys")
+    column_type = conf.get("column", "types")
+    key_list = [key.strip() for key in column_key.split(",")]
+    type_list = [typ.strip() for typ in column_type.split(",")]
+    for i, key in enumerate(key_list):
+        typ = type_list[i]
+        if dic[key] == None:
+            str_list.append("null")
+        elif typ == "char":
+            str_list.append("'"+dic[key]+"'")
+        else:
+            str_list.append(str(dic[key]))
+    return ",".join(str_list)
+
+def get_update(dic):
+    str_list = []
+    column_key = conf.get("column", "keys")
+    column_type = conf.get("column", "types")
+    key_list = [key.strip() for key in column_key.split(",")]
+    type_list = [typ.strip() for typ in column_type.split(",")]
+    for i, key in enumerate(key_list):
+        typ = type_list[i]
+        if dic[key] == None:
+            str_list.append(key + "=null")
+        elif typ == "char":
+            str_list.append(key + "='"+dic[key]+"'")
+        else:
+            str_list.append(key + "=" + str(dic[key]))
+    return ",".join(str_list)
+
 # store the article
-def store(dic):
-    print(json.dumps(dic))
-    return True
+def store(dic, article_id):
+    ret = 0
+    value_str = get_value(dic)
+    update_str = get_update(dic)
+    column_key = conf.get("column", "keys")
+    db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
+    cursor = db.cursor()
+    sql = "insert into article (" + column_key + ") values (" + value_str + ") on duplicate key update " + update_str
+    print (sql)
+    #sql = "insert into article_fail (aid, type) values (1, 0) on duplicate key update type = 1"
+    try:
+        cursor.execute(sql)
+        db.commit()
+    except:
+        db.rollback()
+        ret = -4
+ 
+    db.close()
+    return ret
 
 
 if __name__ == "__main__":
