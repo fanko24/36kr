@@ -63,7 +63,7 @@ def update_error(ret, article_id):
 
 # download a page
 def download(article_id):
-    time.sleep(random.randint(1000,2000)/1000.0) 
+    time.sleep(random.randint(1000,5000)/1000.0) 
     html = None
     # download the page
     url = "https://36kr.com/p/"+str(article_id)
