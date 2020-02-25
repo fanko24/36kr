@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "main_history.py", line 29, in <module>
+    ret = spider.spider(current_id)
+  File "/Users/fanko/work/36kr/bin/spider.py", line 44, in spider
+    update_error(ret)
+TypeError: update_error() missing 1 required positional argument: 'article_id'

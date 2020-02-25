@@ -33,7 +33,7 @@ def spider(article_id):
     if not dic:
         log.warning("Analyze fail: " + str(article_id))
         ret = -3
-        update_error(ret)
+        update_error(ret, article_id)
         return ret
     log.info("Analyze success: " + str(article_id))
     
@@ -41,7 +41,7 @@ def spider(article_id):
     ret = store(dic, article_id)
     if ret:
         log.warning("Store fail: " + str(article_id))
-        update_error(ret)
+        update_error(ret, article_id)
         return ret
     log.info("Store success: " + str(article_id))
 
