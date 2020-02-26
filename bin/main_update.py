@@ -1,41 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8
-#download, analyze and store the 36kr articel from the min id tO 0 
+# author: 8137125@qq.com
 
 # my libraries
 import spider
+import sql
 from myLog import log
+
 
 # get the max id of articles that have spidered
 def get_max_id():
-    return 5294799
-
-# update the success content of the article
-def update_success(cid):
-    return 0
-
-# update the fail message of the article
-def update_fail(cid):
-    return 0
+    return 5295000
 
 if __name__ == "__main__":
-    # get the min id of articles that have spidered
-    max_id = get_max_id()
-    log.info("The max id is " + str(max_id))
+    # get the min id of article that have spidered
+    current_id = get_max_id()
 
-    current_id = max_id + 1
     cnt = 0
-    while cnt < 50:
-        ret = spider.spider(current_id)
-
-        # if spider success, update the article to mysql; or update the fail message
-        if not ret:
-            update_success(current_id)
-            cnt = 0
-            log.info("Update success: " + str(current_id))
-        else:
-            update_fail(current_id)
-            cnt += 1
-            log.warning("Update fail: " + str(current_id))
-
+    while cnt < 30:
         current_id += 1
+        ret = spider.spider(current_id)
+        if not ret:
+            log.info("Update success: " + str(current_id))
+            cnt = 0
+        else:
+            log.warning("Update fail: " + str(current_id))
+            cnt += 1
