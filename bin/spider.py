@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# download, analyze and store the 36kr article
+# author: 8137125@qq.com
 
 # standard libraries
+import sys
 import re
 import time
 import random
-import json
-import sys
 
 # third party libraries
 from urllib import request
 
 # my libraries
-import article
-import mySql
+import sql
 from myLog import log
 from myConf import conf
 
-# spider an article; return: -1, if urlopen error; -2, if decode error; -3, if analyze error; -4, if store error
+
+# if crawler return fail, update article_fail
 def spider(article_id):
+    ret = crawler(article_id)
+    if ret:
+        sql.update_fail(article_id, ret)
+    
+    return ret
+
+
+# return: -1, urlopen error; -2, decode error; -3, analyze error; -4, store error
+def crawler(article_id):
+    dic = {}
     # download the article
     html, ret = download(article_id)
     if ret:
         log.warning("Download fail: " + str(article_id))
-        update_fail(ret, article_id)
         return ret
     log.info("Download success: " + str(article_id))
     
@@ -32,34 +40,24 @@ def spider(article_id):
     dic = analyze(html)
     if not dic:
         log.warning("Analyze fail: " + str(article_id))
-        ret = -3
-        update_fail(ret, article_id)
-        return ret
+        return -3
     log.info("Analyze success: " + str(article_id))
     
     # store the article
-    ret = store(dic, article_id)
+    ret = sql.store(article_id, dic)
     if ret:
         log.warning("Store fail: " + str(article_id))
-        update_fail(ret, article_id)
-        return ret
+        return -4
     log.info("Store success: " + str(article_id))
 
     return 0
 
-# update mysql article_fail
-def update_fail(ret, article_id):
-    db = mySql.mysql_connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "insert into article_fail (id, type) values (" + str(article_id) + "," + str(ret) + ") on duplicate key update type =" + str(ret) 
-    ret = mysql_execute(db, sql)
-    if ret:
-        log.warning("Execute sql fail: " + sql)
-    return 0
 
 # download a page
 def download(article_id):
     time.sleep(random.randint(1000,3000)/1000.0) 
     html = None
+
     # download the page
     url = "https://36kr.com/p/"+str(article_id)
     
@@ -93,6 +91,7 @@ def download(article_id):
         
     return html, 0
 
+
 # analyze a html
 def analyze(html):
     dic = {}
@@ -117,57 +116,6 @@ def analyze(html):
                 else:
                     dic[column] = None
     return dic
-
-def get_value(dic):
-    str_list = []
-    column_key = conf.get("column", "keys")
-    column_type = conf.get("column", "types")
-    key_list = [key.strip() for key in column_key.split(",")]
-    type_list = [typ.strip() for typ in column_type.split(",")]
-    for i, key in enumerate(key_list):
-        typ = type_list[i]
-        if dic[key] == None:
-            str_list.append("null")
-        elif typ == "char":
-            str_list.append("'"+dic[key]+"'")
-        else:
-            str_list.append(str(dic[key]))
-    return ",".join(str_list)
-
-def get_update(dic):
-    str_list = []
-    column_key = conf.get("column", "keys")
-    column_type = conf.get("column", "types")
-    key_list = [key.strip() for key in column_key.split(",")]
-    type_list = [typ.strip() for typ in column_type.split(",")]
-    for i, key in enumerate(key_list):
-        typ = type_list[i]
-        if dic[key] == None:
-            str_list.append(key + "=null")
-        elif typ == "char":
-            str_list.append(key + "='"+dic[key]+"'")
-        else:
-            str_list.append(key + "=" + str(dic[key]))
-    return ",".join(str_list)
-
-# store the article
-def store(dic, article_id):
-    ret = 0
-    value_str = get_value(dic)
-    update_str = get_update(dic)
-    column_key = conf.get("column", "keys")
-    db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    cursor = db.cursor()
-    sql = "insert into article (" + column_key + ") values (" + value_str + ") on duplicate key update " + update_str
-    try:
-        cursor.execute(sql)
-        db.commit()
-    except:
-        db.rollback()
-        ret = -4
- 
-    db.close()
-    return ret
 
 
 if __name__ == "__main__":
