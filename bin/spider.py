@@ -11,10 +11,10 @@ import sys
 
 # third party libraries
 from urllib import request
-import pymysql
 
 # my libraries
 import article
+import mySql
 from myLog import log
 from myConf import conf
 
@@ -24,7 +24,7 @@ def spider(article_id):
     html, ret = download(article_id)
     if ret:
         log.warning("Download fail: " + str(article_id))
-        update_error(ret, article_id)
+        update_fail(ret, article_id)
         return ret
     log.info("Download success: " + str(article_id))
     
@@ -33,7 +33,7 @@ def spider(article_id):
     if not dic:
         log.warning("Analyze fail: " + str(article_id))
         ret = -3
-        update_error(ret, article_id)
+        update_fail(ret, article_id)
         return ret
     log.info("Analyze success: " + str(article_id))
     
@@ -41,24 +41,19 @@ def spider(article_id):
     ret = store(dic, article_id)
     if ret:
         log.warning("Store fail: " + str(article_id))
-        update_error(ret, article_id)
+        update_fail(ret, article_id)
         return ret
     log.info("Store success: " + str(article_id))
 
     return 0
 
-def update_error(ret, article_id):
-    db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    cursor = db.cursor()
+# update mysql article_fail
+def update_fail(ret, article_id):
+    db = mySql.mysql_connect("localhost","root","fanofkobe","36kr" ) 
     sql = "insert into article_fail (id, type) values (" + str(article_id) + "," + str(ret) + ") on duplicate key update type =" + str(ret) 
-    try:
-        cursor.execute(sql)
-        db.commit()
-    except:
-        db.rollback()
- 
-    db.close()
-
+    ret = mysql_execute(db, sql)
+    if ret:
+        log.warning("Execute sql fail: " + sql)
     return 0
 
 # download a page
