@@ -8,13 +8,9 @@ import sql
 from myLog import log
 
 
-# get the max id of articles that have spidered
-def get_max_id():
-    return 5295000
-
 if __name__ == "__main__":
-    # get the min id of article that have spidered
-    current_id = get_max_id()
+    # get the max id of article that have spidered
+    current_id = sql.get_max_id()
 
     cnt = 0
     while cnt < 30:
