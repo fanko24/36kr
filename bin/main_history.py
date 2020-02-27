@@ -22,7 +22,7 @@ if __name__ == "__main__":
         else:
             log.warning("Update fail: " + str(current_id))
             cnt += 1
-            if cnt > 30:
+            if cnt > 100:
                 for i in range(10):
                     current_id -= 1
                     sql.update_pass(current_id)                
