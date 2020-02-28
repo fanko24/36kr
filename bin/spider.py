@@ -82,20 +82,20 @@ def download(article_id):
     except:
         log.warning("Urlopen fail: " + str(article_id))
         return html, -1
-
+    
     try:
         html = response.read().decode("utf-8")
     except:
         log.warning("Decode fail: " + str(article_id))
         return html, -2
-        
+
     return html, 0
 
 
 # analyze a html
 def analyze(html):
     dic = {}
-    pattern = re.compile(r'{"id":(.*?),"project_id":(.*?),"goods_id":(.*?),"domain_id":(.*?),"column_id":(.*?),"monographic_id":(.*?),"related_company_id":(.*?),"related_company_type":(.*?),"related_company_name":(.*?),"close_comment":(.*?),"state":(.*?),"title":(.*?),"catch_title":(.*?),"summary":(.*?),"content":(.*?),"cover":(.*?),"source_type":(.*?),"source_urls":(.*?),"related_post_ids":(.*?),"extraction_tags":(.*?),"extra":(.*?),"user_id":(.*?),"published_at":(.*?),"created_at":(.*?),"updated_at":(.*?),"counters":(.*?),"related_company_counters":(.*?),"related_posts":(.*?),"is_free":(.*?),"has_rights_goods":(.*?),"is_tovc":(.*?),"image_source":(.*?),"company_info":(.*?),"company_contact_info":(.*?),"company_fund_info":(.*?),"share_data":(.*?),"title_mobile":(.*?),"cover_mobile":(.*?),"ban_eclub":(.*?),"audios":\[(.*?)\],.*?"db_counters":\[(.*?)\],.*?"user":(.*?),"motifs"')
+    pattern = re.compile(r'{"id":(.*?),"project_id":(.*?),"goods_id":(.*?),"domain_id":.*?,"column_id":(.*?),"monographic_id":(.*?),"related_company_id":.*?,"related_company_type":.*?,"related_company_name":.*?,"close_comment":.*?,"state":(.*?),"title":(.*?),"catch_title":.*?,"summary":(.*?),"content":(.*?),"cover":(.*?),"source_type":(.*?),"source_urls":(.*?),"related_post_ids":(.*?),"extraction_tags":(.*?),"extra":.*?,"user_id":(.*?),"published_at":(.*?),"created_at":(.*?),"updated_at":(.*?),"counters":(.*?),"related_company_counters":.*?,"related_posts":.*?,"is_free":.*?,"has_rights_goods":(.*?),"is_tovc":.*?,"image_source":(.*?),"company_info":.*?,"company_contact_info":.*?,"company_fund_info":.*?,"share_data":.*?,"title_mobile":.*?,"cover_mobile":.*?,"ban_eclub":.*?,"audios":\[(.*?)\],.*?"db_counters":\[(.*?)\],.*?"user":.*?,"motifs"')
         
     # match the regex pattern and analyze features
     match = pattern.search(html)
