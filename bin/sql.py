@@ -28,7 +28,7 @@ def store(article_id, dic):
     except:
         db.rollback()
         ret = -1
-
+    
     db.close()
     return ret
 

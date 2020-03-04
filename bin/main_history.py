@@ -10,7 +10,8 @@ from myLog import log
 
 if __name__ == "__main__":
     # get the min id of article that have spidered
-    current_id = 5295000
+    #current_id = sql.get_min_id()
+    current_id = 5296000
 
     cnt = 0
     while current_id > 0:
