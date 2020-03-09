@@ -84,7 +84,7 @@ def download(article_id):
         return html, -1
 
     try:
-        html = response.read().decode("utf-8", "ignore")
+        html = response.read().decode("utf-8")
     except:
         log.warning("Decode fail: " + str(article_id))
         return html, -2
