@@ -55,7 +55,7 @@ def crawler(article_id):
 
 # download a page
 def download(article_id):
-    time.sleep(random.randint(1000,3000)/1000.0) 
+    time.sleep(random.randint(1000,5000)/1000.0) 
     html = None
 
     # download the page
@@ -87,6 +87,7 @@ def download(article_id):
         html = response.read().decode("utf-8")
     except:
         log.warning("Decode fail: " + str(article_id))
+        time.sleep(120.0) 
         return html, -2
     
     return html, 0
