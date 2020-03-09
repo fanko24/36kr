@@ -28,7 +28,7 @@ def store(article_id, dic):
     except:
         db.rollback()
         ret = -1
-    
+
     db.close()
     return ret
 
@@ -45,7 +45,7 @@ def get_value_str(dic):
         if dic[key] == None:
             str_list.append("null")
         elif typ == "char":
-            str_list.append("'"+dic[key]+"'")
+            str_list.append("'"+dic[key].strip(",").replace("'", "-")+"'")
         else:
             str_list.append(str(dic[key]))
     return ",".join(str_list)
@@ -63,7 +63,7 @@ def get_update_str(dic):
         if dic[key] == None:
             str_list.append(key + "=null")
         elif typ == "char":
-            str_list.append(key + "='"+dic[key]+"'")
+            str_list.append(key + "='"+dic[key].strip(",").replace("'", "-")+"'")
         else:
             str_list.append(key + "=" + str(dic[key]))
     return ",".join(str_list)
