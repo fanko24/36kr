@@ -10,7 +10,7 @@ from myLog import log
 
 if __name__ == "__main__":
     # get the max id of article that have spidered
-    current_id = sql.get_max_id()
+    current_id = sql.get_max_id() - 1000
 
     cnt = 0
     while cnt < 30:

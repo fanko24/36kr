@@ -11,7 +11,7 @@ from myLog import log
 if __name__ == "__main__":
     # get the min id of article that have spidered
     current_id = sql.get_min_id()
-    #current_id = 5299400
+    #current_id = 223000
 
     cnt = 0
     while current_id > 0:
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         else:
             log.warning("Update fail: " + str(current_id))
             cnt += 1
-            if cnt > 100:
+            if cnt > 2000:
                 for i in range(10):
                     current_id -= 1
                     sql.update_pass(current_id)                
