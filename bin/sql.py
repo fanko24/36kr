@@ -112,7 +112,7 @@ def update_pass(article_id):
 def get_min_id():
     min_id = 0
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "select min(id) from article_success"
+    sql = "select min(old_id) from article_success"
     cursor = db.cursor()
     try:
         cursor.execute(sql)
@@ -128,7 +128,7 @@ def get_min_id():
 def get_max_id():
     max_id = 0
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "select max(id) from article_success"
+    sql = "select max(old_id) from article_success"
     cursor = db.cursor()
     try:
         cursor.execute(sql)
