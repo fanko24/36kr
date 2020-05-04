@@ -17,6 +17,22 @@ from myLog import log
 from myConf import conf
 
 
+def filter_content(cont):
+    patterns = [("<.*?>", ""), 
+                ("\\\\n", ""),
+                ("&#39;", "'"),
+                ("&amp;", "&"),
+                ("&quot;", ""),
+                ("&nbsp;", ""),
+                ("&nbsp", ""),
+                ("&gt;", ""),
+                ("&lt;", "")
+               ]
+    for old, new in patterns:
+        cont = re.sub(old, new, cont)
+    return cont
+
+
 # if crawler return fail, update article_fail
 def spider(article_id):
     ret = crawler(article_id)
@@ -96,7 +112,7 @@ def download(article_id):
 # analyze a html
 def analyze(html):
     dic = {}
-    pattern = re.compile(r'{"id":(.*?),"project_id":(.*?),"goods_id":(.*?),"domain_id":.*?,"column_id":(.*?),"monographic_id":(.*?),"related_company_id":.*?,"related_company_type":.*?,"related_company_name":.*?,"close_comment":.*?,"state":(.*?),"title":(.*?),"catch_title":.*?,"summary":(.*?),"content":(.*?),"cover":(.*?),"source_type":(.*?),"source_urls":(.*?),"related_post_ids":(.*?),"extraction_tags":(.*?),"extra":.*?,"user_id":(.*?),"published_at":(.*?),"created_at":(.*?),"updated_at":(.*?),"counters":(.*?),"related_company_counters":.*?,"related_posts":.*?,"is_free":.*?,"has_rights_goods":(.*?),"is_tovc":.*?,"image_source":(.*?),"company_info":.*?,"company_contact_info":.*?,"company_fund_info":.*?,"share_data":.*?,"title_mobile":.*?,"cover_mobile":.*?,.*?"audios":\[(.*?)\],.*?"db_counters":\[(.*?)\],.*?"user":.*?,"motifs"')
+    pattern = re.compile(r'{"code":0,"data":{"itemId":(.*?),"widgetTitle":"(.*?)","summary":"(.*?)",.*?,"authorId":(.*?),.*?,"publishTime":(.*?),"widgetContent":"(.*?)","sourceType":"(.*?)"')
         
     # match the regex pattern and analyze features
     match = pattern.search(html)
@@ -116,6 +132,8 @@ def analyze(html):
                     dic[column] = match.group(i + 1).strip('"')
                 else:
                     dic[column] = None
+            if column == "content":
+                dic[column] = filter_content(dic[column])
     return dic
 
 

@@ -10,10 +10,10 @@ from myLog import log
 
 if __name__ == "__main__":
     # get the max id of article that have spidered
-    current_id = sql.get_max_id()
+    current_id = 0
 
     cnt = 0
-    while cnt < 30:
+    while True:
         current_id += 1
         ret = spider.spider(current_id)
         if not ret:
@@ -22,3 +22,5 @@ if __name__ == "__main__":
         else:
             log.warning("Update fail: " + str(current_id))
             cnt += 1
+            if cnt > 10:
+                current_id += 10

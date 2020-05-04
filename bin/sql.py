@@ -15,12 +15,13 @@ from myLog import log
 # update the article
 def store(article_id, dic):
     ret = 0
-    value_str = get_value_str(dic)
-    update_str = get_update_str(dic)
+    value_str = get_value_str(dic, article_id)
+    update_str = get_update_str(dic, article_id)
     column_key = conf.get("column", "keys")
 
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "insert into article_success (" + column_key + ") values (" + value_str + ") on duplicate key update " + update_str
+    sql = "insert into article_success (" + column_key + ", old_id) values (" + value_str + ") on duplicate key update " + update_str
+    print (sql)
     cursor = db.cursor()
     try:
         cursor.execute(sql)
@@ -34,7 +35,7 @@ def store(article_id, dic):
 
 
 # get insert value string
-def get_value_str(dic):
+def get_value_str(dic, article_id):
     str_list = []
     column_key = conf.get("column", "keys")
     column_type = conf.get("column", "types")
@@ -48,11 +49,12 @@ def get_value_str(dic):
             str_list.append("'"+dic[key].replace("'", "-").strip(",\\")+"'")
         else:
             str_list.append(str(dic[key]))
+    str_list.append(str(article_id))
     return ",".join(str_list)
 
 
 # get update string
-def get_update_str(dic):
+def get_update_str(dic, article_id):
     str_list = []
     column_key = conf.get("column", "keys")
     column_type = conf.get("column", "types")
@@ -66,6 +68,8 @@ def get_update_str(dic):
             str_list.append(key + "='"+dic[key].replace("'", "-").strip(",\\")+"'")
         else:
             str_list.append(key + "=" + str(dic[key]))
+
+    str_list.append("old_id" + "=" + str(article_id))
     return ",".join(str_list)
 
 
@@ -73,7 +77,7 @@ def get_update_str(dic):
 def update_fail(article_id, error_type):
     ret = 0
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "insert into article_fail (id, type) values (" + str(article_id) + "," + str(error_type) + ") on duplicate key update type =" + str(error_type) 
+    sql = "insert into article_fail (old_id, type) values (" + str(article_id) + "," + str(error_type) + ") on duplicate key update type =" + str(error_type) 
     cursor = db.cursor()
     try:
         cursor.execute(sql)
@@ -91,7 +95,7 @@ def update_fail(article_id, error_type):
 def update_pass(article_id):
     ret = 0
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "insert into article_pass (id) values (" + str(article_id) + ") on duplicate key update id =" + str(article_id) 
+    sql = "insert into article_pass (old_id) values (" + str(article_id) + ") on duplicate key update old_id =" + str(article_id) 
     cursor = db.cursor()
     try:
         cursor.execute(sql)
