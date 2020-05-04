@@ -77,7 +77,7 @@ def get_update_str(dic, article_id):
 def update_fail(article_id, error_type):
     ret = 0
     db = pymysql.connect("localhost","root","fanofkobe","36kr" ) 
-    sql = "insert into article_fail (old_id, type) values (" + str(article_id) + "," + str(error_type) + ") on duplicate key update type =" + str(error_type) 
+    sql = "insert into article_fail (old_id, error) values (" + str(article_id) + "," + str(error_type) + ") on duplicate key update error =" + str(error_type) 
     cursor = db.cursor()
     try:
         cursor.execute(sql)
